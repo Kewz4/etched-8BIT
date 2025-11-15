@@ -29,7 +29,7 @@ public class EtchedServerPlayPacketHandler {
         }
 
         if (player.containerMenu instanceof EtchingMenu menu) {
-            ctx.enqueueWork(() -> menu.setUrl(pkt.url()));
+            ctx.enqueueWork(() -> menu.setUrl(pkt.url(), pkt.sixteenBit()));
         } else if (player.containerMenu instanceof RadioMenu menu) {
             ctx.enqueueWork(() -> menu.setUrl(pkt.url()));
         }

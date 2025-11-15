@@ -125,18 +125,18 @@ public class BandcampSource implements SoundDownloadSource {
             if ("album".equals(type)) {
                 JsonArray trackInfoJson = GsonHelper.getAsJsonArray(json, "trackinfo");
                 List<TrackData> tracks = new ArrayList<>(trackInfoJson.size());
-                tracks.add(new TrackData(url, artist, Component.literal(title)));
+                tracks.add(new TrackData(url, artist, Component.literal(title), false));
                 for (int i = 0; i < trackInfoJson.size(); i++) {
                     JsonObject trackJson = GsonHelper.convertToJsonObject(trackInfoJson.get(i), "trackinfo[" + i + "]");
                     String trackUrl = url.substring(0, urlEnd + 4) + GsonHelper.getAsString(trackJson, "title_link");
                     String trackArtist = trackJson.has("artist") && !trackJson.get("artist").isJsonNull() ? StringEscapeUtils.unescapeHtml4(GsonHelper.getAsString(trackJson, "artist", artist)) : artist;
                     String trackTitle = StringEscapeUtils.unescapeHtml4(GsonHelper.getAsString(trackJson, "title"));
 
-                    tracks.add(new TrackData(trackUrl, trackArtist, Component.literal(trackTitle)));
+                    tracks.add(new TrackData(trackUrl, trackArtist, Component.literal(trackTitle), false));
                 }
                 return tracks;
             }
-            return Collections.singletonList(new TrackData(url, artist, Component.literal(title)));
+            return Collections.singletonList(new TrackData(url, artist, Component.literal(title), false));
         });
     }
 

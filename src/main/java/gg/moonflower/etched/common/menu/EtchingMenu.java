@@ -70,6 +70,7 @@ public class EtchingMenu extends AbstractContainerMenu {
     private final Container result;
     private final Player player;
     private String url;
+    private boolean sixteenBit;
     private int urlId;
     private long lastSoundTime;
     private CompletableFuture<?> currentRequest;
@@ -349,7 +350,7 @@ public class EtchingMenu extends AbstractContainerMenu {
                         if (TrackData.isLocalSound(this.url)) {
                             trackData = trackData.withUrl(new ResourceLocation(this.url).toString());
                         }
-                        data[i] = trackData;
+                        data[i] = trackData.withSixteenBit(this.sixteenBit);
                     }
 
                     EtchedMusicDiscItem.setMusic(resultStack, data);
@@ -378,9 +379,10 @@ public class EtchingMenu extends AbstractContainerMenu {
      *
      * @param string The new URL
      */
-    public void setUrl(String string) {
-        if (!Objects.equals(this.url, string)) {
+    public void setUrl(String string, boolean sixteenBit) {
+        if (!Objects.equals(this.url, string) || this.sixteenBit != sixteenBit) {
             this.url = string;
+            this.sixteenBit = sixteenBit;
             this.urlId++;
             this.urlId %= 1000;
             this.setupResultSlot();

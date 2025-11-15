@@ -10,15 +10,16 @@ import org.jetbrains.annotations.ApiStatus;
  * @author Jackson
  */
 @ApiStatus.Internal
-public record ServerboundSetUrlPacket(String url) implements EtchedPacket {
+public record ServerboundSetUrlPacket(String url, boolean sixteenBit) implements EtchedPacket {
 
     public ServerboundSetUrlPacket(FriendlyByteBuf buf) {
-        this(buf.readUtf());
+        this(buf.readUtf(), buf.readBoolean());
     }
 
     @Override
     public void writePacketData(FriendlyByteBuf buf) {
         buf.writeUtf(this.url);
+        buf.writeBoolean(this.sixteenBit);
     }
 
     @Override

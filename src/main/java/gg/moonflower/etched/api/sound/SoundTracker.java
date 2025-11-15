@@ -110,7 +110,7 @@ public class SoundTracker {
      * @param stream              Whether to play a stream or regular file
      * @return A new sound instance
      */
-    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, Entity entity, int attenuationDistance, boolean stream) {
+    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, Entity entity, int attenuationDistance, boolean stream, boolean sixteenBit) {
         return new OnlineRecordSoundInstance(url, entity, attenuationDistance, new MusicDownloadListener(title, entity::getX, entity::getY, entity::getZ) {
             @Override
             public void onSuccess() {
@@ -128,11 +128,11 @@ public class SoundTracker {
                 Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("record." + Etched.MOD_ID + ".downloadFail", title), true);
                 FAILED_URLS.add(url);
             }
-        }, stream ? AudioSource.AudioFileType.STREAM : AudioSource.AudioFileType.FILE);
+        }, stream ? AudioSource.AudioFileType.STREAM : AudioSource.AudioFileType.FILE, sixteenBit);
     }
 
-    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, Entity entity, boolean stream) {
-        return SoundTracker.getEtchedRecord(url, title, entity, 16, stream);
+    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, Entity entity, boolean stream, boolean sixteenBit) {
+        return SoundTracker.getEtchedRecord(url, title, entity, 16, stream, sixteenBit);
     }
 
     /**
@@ -146,7 +146,7 @@ public class SoundTracker {
      * @param type                The type of audio to accept
      * @return A new sound instance
      */
-    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, ClientLevel level, BlockPos pos, int attenuationDistance, AudioSource.AudioFileType type) {
+    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, ClientLevel level, BlockPos pos, int attenuationDistance, AudioSource.AudioFileType type, boolean sixteenBit) {
         BlockState aboveState = level.getBlockState(pos.above());
         boolean muffled = aboveState.is(BlockTags.WOOL);
         boolean hidden = !aboveState.isAir();
@@ -170,11 +170,11 @@ public class SoundTracker {
                 Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("record." + Etched.MOD_ID + ".downloadFail", title), true);
                 FAILED_URLS.add(url);
             }
-        }, type);
+        }, type, sixteenBit);
     }
 
-    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, ClientLevel level, BlockPos pos, AudioSource.AudioFileType type) {
-        return getEtchedRecord(url, title, level, pos, 16, type);
+    public static AbstractOnlineSoundInstance getEtchedRecord(String url, Component title, ClientLevel level, BlockPos pos, AudioSource.AudioFileType type, boolean sixteenBit) {
+        return getEtchedRecord(url, title, level, pos, 16, type, sixteenBit);
     }
 
     private static void playRecord(BlockPos pos, SoundInstance sound) {
@@ -211,7 +211,7 @@ public class SoundTracker {
             playBlockRecord(pos, tracks, track + 1);
             return;
         }
-        playRecord(pos, StopListeningSound.create(getEtchedRecord(url, trackData.getDisplayName(), level, pos, AudioSource.AudioFileType.FILE), () -> Minecraft.getInstance().tell(() -> {
+        playRecord(pos, StopListeningSound.create(getEtchedRecord(url, trackData.getDisplayName(), level, pos, AudioSource.AudioFileType.FILE, trackData.sixteenBit()), () -> Minecraft.getInstance().tell(() -> {
             if (!((LevelRendererAccessor) Minecraft.getInstance().levelRenderer).getPlayingRecords().containsKey(pos)) {
                 return;
             }
@@ -311,7 +311,7 @@ public class SoundTracker {
         }
 
         if (TrackData.isValidURL(url)) {
-            AbstractOnlineSoundInstance record = getEtchedRecord(url, RADIO, level, pos, 8, AudioSource.AudioFileType.BOTH);
+            AbstractOnlineSoundInstance record = getEtchedRecord(url, RADIO, level, pos, 8, AudioSource.AudioFileType.BOTH, false);
             record.setLoop(true); // If the sound is a file, then just continue looping that specific track
             playRecord(pos, record); // Get the new block state
         }
@@ -354,7 +354,7 @@ public class SoundTracker {
         ItemStack disc = jukebox.getItem(jukebox.getPlayingIndex());
         SoundInstance sound = null;
         if (disc.getItem() instanceof RecordItem) {
-            sound = StopListeningSound.create(getEtchedRecord(((RecordItem) disc.getItem()).getSound().getLocation().toString(), ((RecordItem) disc.getItem()).getDisplayName(), level, pos, AudioSource.AudioFileType.FILE), () -> Minecraft.getInstance().tell(() -> playNextRecord(level, pos)));
+            sound = StopListeningSound.create(getEtchedRecord(((RecordItem) disc.getItem()).getSound().getLocation().toString(), ((RecordItem) disc.getItem()).getDisplayName(), level, pos, AudioSource.AudioFileType.FILE, false), () -> Minecraft.getInstance().tell(() -> playNextRecord(level, pos)));
         } else if (disc.getItem() instanceof PlayableRecord) {
             Optional<TrackData[]> optional = PlayableRecord.getStackMusic(disc);
             if (optional.isPresent()) {
@@ -362,7 +362,7 @@ public class SoundTracker {
                 TrackData track = jukebox.getTrack() < 0 || jukebox.getTrack() >= tracks.length ? tracks[0] : tracks[jukebox.getTrack()];
                 String url = track.url();
                 if (TrackData.isValidURL(url) && !FAILED_URLS.contains(url)) {
-                    sound = StopListeningSound.create(getEtchedRecord(url, track.getDisplayName(), level, pos, AudioSource.AudioFileType.FILE), () -> Minecraft.getInstance().tell(() -> playNextRecord(level, pos)));
+                    sound = StopListeningSound.create(getEtchedRecord(url, track.getDisplayName(), level, pos, AudioSource.AudioFileType.FILE, track.sixteenBit()), () -> Minecraft.getInstance().tell(() -> playNextRecord(level, pos)));
                 }
             }
         }

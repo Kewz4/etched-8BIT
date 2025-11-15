@@ -147,7 +147,7 @@ public class SoundCloudSource implements SoundDownloadSource {
             if ("playlist".equals(kind)) {
                 JsonArray tracksJson = GsonHelper.getAsJsonArray(json, "tracks");
                 List<TrackData> tracks = new ArrayList<>();
-                tracks.add(new TrackData(url, artist, Component.literal(title)));
+                tracks.add(new TrackData(url, artist, Component.literal(title), false));
 
                 for (int i = 0; i < tracksJson.size(); i++) {
                     try {
@@ -159,7 +159,7 @@ public class SoundCloudSource implements SoundDownloadSource {
                         String trackUrl = GsonHelper.getAsString(trackJson, "permalink_url");
                         String trackArtist = GsonHelper.getAsString(trackUser, "username");
                         String trackTitle = GsonHelper.getAsString(trackJson, "title");
-                        tracks.add(new TrackData(trackUrl, trackArtist, Component.literal(trackTitle)));
+                        tracks.add(new TrackData(trackUrl, trackArtist, Component.literal(trackTitle), false));
                     } catch (JsonParseException e) {
                         LOGGER.error("Failed to parse track: {}[{}]", url, i, e);
                     }
@@ -168,7 +168,7 @@ public class SoundCloudSource implements SoundDownloadSource {
                 return tracks;
             }
 
-            return Collections.singletonList(new TrackData(url, artist, Component.literal(title)));
+            return Collections.singletonList(new TrackData(url, artist, Component.literal(title), false));
         });
     }
 

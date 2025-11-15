@@ -130,7 +130,7 @@ public interface PlayableRecord {
      */
     @OnlyIn(Dist.CLIENT)
     default Optional<? extends SoundInstance> createEntitySound(ItemStack stack, Entity entity, int track, int attenuationDistance) {
-        return track < 0 ? Optional.empty() : this.getMusic(stack).filter(tracks -> track < tracks.length).map(tracks -> SoundTracker.getEtchedRecord(tracks[track].url(), tracks[track].getDisplayName(), entity, attenuationDistance, false));
+        return track < 0 ? Optional.empty() : this.getMusic(stack).filter(tracks -> track < tracks.length).map(tracks -> SoundTracker.getEtchedRecord(tracks[track].url(), tracks[track].getDisplayName(), entity, attenuationDistance, false, tracks[track].sixteenBit()));
     }
 
     /**

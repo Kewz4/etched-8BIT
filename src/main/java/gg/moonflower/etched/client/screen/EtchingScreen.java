@@ -41,6 +41,7 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
     private static final Component CANNOT_CREATE = Component.translatable("screen." + Etched.MOD_ID + ".etching_table.error.cannot_create");
     private static final Component CANNOT_CREATE_MISSING_DISC = Component.translatable("screen." + Etched.MOD_ID + ".etching_table.error.cannot_create.missing_disc").withStyle(ChatFormatting.GRAY);
     private static final Component CANNOT_CREATE_MISSING_LABEL = Component.translatable("screen." + Etched.MOD_ID + ".etching_table.error.cannot_create.missing_label").withStyle(ChatFormatting.GRAY);
+    private static final Component SIXTEEN_BIT_TOOLTIP = Component.translatable("screen." + Etched.MOD_ID + ".etching_table.sixteen_bit");
 
     private ItemStack discStack;
     private ItemStack labelStack;
@@ -49,6 +50,7 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
     private String oldUrl;
     private String invalidReason;
     private boolean displayLabels;
+    private boolean sixteenBit;
 
     public EtchingScreen(EtchingMenu menu, Inventory inventory, Component component) {
         super(menu, inventory, component);
@@ -71,7 +73,7 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
         this.url.setMaxLength(32500);
         this.url.setResponder(s -> {
             if (!Objects.equals(this.oldUrl, s) && this.urlTicks <= 0) {
-                EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket(""));
+                EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket("", this.sixteenBit));
             }
             this.urlTicks = 8;
         });
@@ -87,7 +89,7 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
             this.urlTicks--;
             if (this.urlTicks <= 0 && !Objects.equals(this.oldUrl, this.url.getValue())) {
                 this.oldUrl = this.url.getValue();
-                EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket(this.url.getValue()));
+                EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket(this.url.getValue(), this.sixteenBit));
             }
         }
     }
@@ -148,6 +150,10 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
         if (x >= this.leftPos + 83 && x < this.leftPos + 110 && y >= this.topPos + 44 && y < this.topPos + 61) {
             guiGraphics.renderTooltip(this.font, reasonLines, x, y);
         }
+
+        if (x >= this.leftPos + 130 && x < this.leftPos + 144 && y >= this.topPos + 65 && y < this.topPos + 79) {
+            guiGraphics.renderTooltip(this.font, SIXTEEN_BIT_TOOLTIP, x, y);
+        }
     }
 
     @Override
@@ -172,6 +178,9 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
                 this.renderLabel(guiGraphics, x, y, index);
             }
         }
+
+        int u = this.sixteenBit ? 14 : 0;
+        guiGraphics.blit(TEXTURE, this.leftPos + 130, this.topPos + 65, u, 212, 14, 14);
     }
 
     // FIXME rewrite
@@ -222,6 +231,17 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
                     return true;
                 }
             }
+        }
+
+        int x = this.leftPos + 130;
+        int y = this.topPos + 65;
+        if (mouseX >= x && mouseY >= y && mouseX < x + 14 && mouseY < y + 14) {
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            this.sixteenBit = !this.sixteenBit;
+            if (this.urlTicks <= 0) {
+                EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket(this.url.getValue(), this.sixteenBit));
+            }
+            return true;
         }
 
         return super.mouseClicked(mouseX, mouseY, i);

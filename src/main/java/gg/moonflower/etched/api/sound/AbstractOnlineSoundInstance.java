@@ -47,8 +47,9 @@ public class AbstractOnlineSoundInstance extends AbstractSoundInstance {
     private final DownloadProgressListener progressListener;
     private final AudioSource.AudioFileType type;
     private final boolean stereo;
+    private final boolean sixteenBit;
 
-    public AbstractOnlineSoundInstance(String url, @Nullable String subtitle, int attenuationDistance, SoundSource source, DownloadProgressListener progressListener, AudioSource.AudioFileType type, boolean stereo) {
+    public AbstractOnlineSoundInstance(String url, @Nullable String subtitle, int attenuationDistance, SoundSource source, DownloadProgressListener progressListener, AudioSource.AudioFileType type, boolean stereo, boolean sixteenBit) {
         super(new ResourceLocation(Etched.MOD_ID, DigestUtils.sha1Hex(url)), source, SoundInstance.createUnseededRandom());
         this.url = url;
         this.subtitle = subtitle;
@@ -56,6 +57,7 @@ public class AbstractOnlineSoundInstance extends AbstractSoundInstance {
         this.progressListener = progressListener;
         this.type = type;
         this.stereo = Etched.CLIENT_CONFIG.forceStereo.get() || stereo;
+        this.sixteenBit = sixteenBit;
     }
 
     private static AudioStream getStream(AudioStream stream, Sound sound) {
@@ -65,7 +67,7 @@ public class AbstractOnlineSoundInstance extends AbstractSoundInstance {
     @Override
     public WeighedSoundEvents resolve(SoundManager soundManager) {
         WeighedSoundEvents weighedSoundEvents = new WeighedSoundEvents(this.getLocation(), this.subtitle);
-        weighedSoundEvents.addSound(new OnlineSound(this.getLocation(), this.url, this.attenuationDistance, this.progressListener, this.type, this.stereo));
+        weighedSoundEvents.addSound(new OnlineSound(this.getLocation(), this.url, this.attenuationDistance, this.progressListener, this.type, this.stereo, this.sixteenBit));
         this.sound = weighedSoundEvents.getSound(this.random);
         return weighedSoundEvents;
     }
@@ -169,13 +171,15 @@ public class AbstractOnlineSoundInstance extends AbstractSoundInstance {
         private final DownloadProgressListener progressListener;
         private final AudioSource.AudioFileType type;
         private final boolean stereo;
+        private final boolean sixteenBit;
 
-        public OnlineSound(ResourceLocation location, String url, int attenuationDistance, DownloadProgressListener progressListener, AudioSource.AudioFileType type, boolean stereo) {
+        public OnlineSound(ResourceLocation location, String url, int attenuationDistance, DownloadProgressListener progressListener, AudioSource.AudioFileType type, boolean stereo, boolean sixteenBit) {
             super(location.toString(), ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Type.FILE, true, false, attenuationDistance);
             this.url = url;
             this.progressListener = progressListener;
             this.type = type;
             this.stereo = stereo;
+            this.sixteenBit = sixteenBit;
         }
 
         public String getURL() {
@@ -192,6 +196,9 @@ public class AbstractOnlineSoundInstance extends AbstractSoundInstance {
 
         @Override
         public AudioStream modifyStream(AudioStream stream) {
+            if (this.sixteenBit) {
+                stream = new gg.moonflower.etched.api.sound.stream.SixteenBitFilterStream(stream, 8);
+            }
             return this.stereo ? stream : new MonoWrapper(stream);
         }
     }

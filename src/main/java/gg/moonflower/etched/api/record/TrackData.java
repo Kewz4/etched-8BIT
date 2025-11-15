@@ -22,9 +22,9 @@ import java.util.regex.Pattern;
  * @author Ocelot
  * @since 2.0.0
  */
-public record TrackData(String url, String artist, Component title) {
+public record TrackData(String url, String artist, Component title, boolean sixteenBit) {
 
-    public static final TrackData EMPTY = new TrackData(null, "Unknown", Component.literal("Custom Music"));
+    public static final TrackData EMPTY = new TrackData(null, "Unknown", Component.literal("Custom Music"), false);
     public static final Codec<TrackData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("Url").forGetter(TrackData::url),
             Codec.STRING.optionalFieldOf("Author", EMPTY.artist()).forGetter(TrackData::artist),
@@ -37,7 +37,8 @@ public record TrackData(String url, String artist, Component title) {
                 } catch (JsonParseException e) {
                     return Component.literal(json);
                 }
-            }, Component.Serializer::toJson).forGetter(TrackData::title)
+            }, Component.Serializer::toJson).forGetter(TrackData::title),
+            Codec.BOOL.optionalFieldOf("SixteenBit", false).forGetter(TrackData::sixteenBit)
     ).apply(instance, TrackData::new));
 
     private static final Pattern RESOURCE_LOCATION_PATTERN = Pattern.compile("[a-z0-9_.-]+");
@@ -103,19 +104,23 @@ public record TrackData(String url, String artist, Component title) {
     }
 
     public TrackData withUrl(String url) {
-        return new TrackData(url, this.artist, this.title);
+        return new TrackData(url, this.artist, this.title, this.sixteenBit);
     }
 
     public TrackData withArtist(String artist) {
-        return new TrackData(this.url, artist, this.title);
+        return new TrackData(this.url, artist, this.title, this.sixteenBit);
     }
 
     public TrackData withTitle(String title) {
-        return new TrackData(this.url, this.artist, Component.literal(title));
+        return new TrackData(this.url, this.artist, Component.literal(title), this.sixteenBit);
     }
 
     public TrackData withTitle(Component title) {
-        return new TrackData(this.url, this.artist, title);
+        return new TrackData(this.url, this.artist, title, this.sixteenBit);
+    }
+
+    public TrackData withSixteenBit(boolean sixteenBit) {
+        return new TrackData(this.url, this.artist, this.title, sixteenBit);
     }
 
     /**
