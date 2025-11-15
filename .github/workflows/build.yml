@@ -1,10 +1,6 @@
 name: Build Mod
 
-on:
-  push:
-    branches: [ "1.20.1" ] # Assuming '1.20.1' is the main branch, adjust if necessary
-  pull_request:
-    branches: [ "1.20.1" ]
+on: [push, pull_request]
 
 jobs:
   build:
