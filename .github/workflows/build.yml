@@ -1,0 +1,32 @@
+name: Build Mod
+
+on:
+  push:
+    branches: [ "1.20.1" ] # Assuming '1.20.1' is the main branch, adjust if necessary
+  pull_request:
+    branches: [ "1.20.1" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Etched-1.20.1-mod
+        path: build/libs/*.jar
