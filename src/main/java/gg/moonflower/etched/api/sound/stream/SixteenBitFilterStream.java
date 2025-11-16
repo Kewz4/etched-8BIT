@@ -6,6 +6,10 @@ import javax.sound.sampled.AudioFormat;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * Reduces the bit depth of an audio stream to create a retro, "lo-fi" sound effect.
+ * This is used to emulate the sound of older video game consoles, such as the SNES.
+ */
 public class SixteenBitFilterStream implements AudioStream {
 
     private final AudioStream source;

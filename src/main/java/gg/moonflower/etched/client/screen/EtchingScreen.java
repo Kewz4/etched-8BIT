@@ -14,6 +14,7 @@ import gg.moonflower.etched.core.registry.EtchedItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -80,6 +81,16 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
         this.url.setCanLoseFocus(true);
         this.addWidget(this.url);
         this.menu.addSlotListener(this);
+        this.addRenderableWidget(new Checkbox(this.leftPos + 8, this.topPos + 8, 20, 20, Component.translatable("screen." + Etched.MOD_ID + ".etching_table.sixteen_bit"), this.sixteenBit) {
+            @Override
+            public void onPress() {
+                super.onPress();
+                EtchingScreen.this.sixteenBit = this.selected();
+                if (EtchingScreen.this.urlTicks <= 0) {
+                    EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket(EtchingScreen.this.url.getValue(), EtchingScreen.this.sixteenBit));
+                }
+            }
+        });
     }
 
     @Override
@@ -150,10 +161,6 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
         if (x >= this.leftPos + 83 && x < this.leftPos + 110 && y >= this.topPos + 44 && y < this.topPos + 61) {
             guiGraphics.renderTooltip(this.font, reasonLines, x, y);
         }
-
-        if (x >= this.leftPos + 130 && x < this.leftPos + 144 && y >= this.topPos + 65 && y < this.topPos + 79) {
-            guiGraphics.renderTooltip(this.font, SIXTEEN_BIT_TOOLTIP, x, y);
-        }
     }
 
     @Override
@@ -179,8 +186,6 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
             }
         }
 
-        int u = this.sixteenBit ? 14 : 0;
-        guiGraphics.blit(TEXTURE, this.leftPos + 130, this.topPos + 65, u, 212, 14, 14);
     }
 
     // FIXME rewrite
@@ -231,17 +236,6 @@ public class EtchingScreen extends AbstractContainerScreen<EtchingMenu> implemen
                     return true;
                 }
             }
-        }
-
-        int x = this.leftPos + 130;
-        int y = this.topPos + 65;
-        if (mouseX >= x && mouseY >= y && mouseX < x + 14 && mouseY < y + 14) {
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            this.sixteenBit = !this.sixteenBit;
-            if (this.urlTicks <= 0) {
-                EtchedMessages.PLAY.sendToServer(new ServerboundSetUrlPacket(this.url.getValue(), this.sixteenBit));
-            }
-            return true;
         }
 
         return super.mouseClicked(mouseX, mouseY, i);
